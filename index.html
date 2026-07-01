@@ -1,0 +1,525 @@
+<style>
+  :root{
+    --ink:#14171f;
+    --ink-soft:#1c2130;
+    --paper:#f6f1e6;
+    --paper-dim:#e8e0cd;
+    --gold:#c9a15a;
+    --teal:#3e7c6f;
+    --rust:#a85a3d;
+    --text-soft:#a9a696;
+    --font-display: 'Iowan Old Style','Palatino Linotype', Georgia, serif;
+    --font-body: 'Avenir Next', 'Segoe UI', -apple-system, sans-serif;
+    --font-mono: 'JetBrains Mono', 'SF Mono', monospace;
+  }
+
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--ink);color:var(--paper);font-family:var(--font-body);}
+
+  .app{
+    max-width:920px;
+    margin:0 auto;
+    padding:48px 24px 80px;
+    position:relative;
+  }
+
+  /* ---- header / signature: the thread ---- */
+  .head{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+    margin-bottom:8px;
+    gap:24px;
+    flex-wrap:wrap;
+  }
+  .head h1{
+    font-family:var(--font-display);
+    font-weight:400;
+    font-size:42px;
+    letter-spacing:0.2px;
+    margin:0;
+    color:var(--paper);
+  }
+  .head .sub{
+    font-family:var(--font-mono);
+    font-size:11px;
+    letter-spacing:1.5px;
+    text-transform:uppercase;
+    color:var(--text-soft);
+    margin-top:6px;
+  }
+  .stats{
+    display:flex;
+    gap:28px;
+    font-family:var(--font-mono);
+  }
+  .stat{ text-align:right; }
+  .stat .n{ font-size:26px; color:var(--gold); line-height:1; }
+  .stat .l{ font-size:10px; letter-spacing:1px; text-transform:uppercase; color:var(--text-soft); }
+
+  hr.rule{
+    border:none;
+    border-top:1px solid #2b3142;
+    margin:28px 0 32px;
+  }
+
+  /* ---- entry composer ---- */
+  .composer{
+    background:var(--ink-soft);
+    border:1px solid #2b3142;
+    border-radius:4px;
+    padding:22px;
+    margin-bottom:44px;
+  }
+  .composer input[type="text"], .composer textarea{
+    width:100%;
+    background:transparent;
+    border:none;
+    color:var(--paper);
+    font-family:var(--font-body);
+    outline:none;
+    resize:vertical;
+  }
+  .composer input[type="text"]{
+    font-family:var(--font-display);
+    font-size:22px;
+    margin-bottom:10px;
+    padding-bottom:10px;
+    border-bottom:1px solid #2b3142;
+  }
+  .composer input[type="text"]::placeholder, .composer textarea::placeholder{
+    color:#5b6072;
+  }
+  .composer textarea{
+    font-size:15px;
+    line-height:1.6;
+    min-height:90px;
+  }
+
+  .composer-foot{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-top:16px;
+    flex-wrap:wrap;
+    gap:14px;
+  }
+
+  .progress-picker{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    font-family:var(--font-mono);
+    font-size:11px;
+    letter-spacing:1px;
+    text-transform:uppercase;
+    color:var(--text-soft);
+  }
+  .dot-row{ display:flex; gap:6px; }
+  .dot{
+    width:16px; height:16px;
+    border-radius:50%;
+    border:1.5px solid #4a5068;
+    cursor:pointer;
+    transition:all .15s ease;
+    background:transparent;
+    padding:0;
+  }
+  .dot.filled{ background:var(--gold); border-color:var(--gold); }
+  .dot:hover{ border-color:var(--gold); }
+
+  .tag-input{
+    background:transparent;
+    border:none;
+    border-bottom:1px dashed #4a5068;
+    color:var(--text-soft);
+    font-family:var(--font-mono);
+    font-size:12px;
+    outline:none;
+    padding:4px 2px;
+    width:220px;
+  }
+  .tag-input::placeholder{ color:#4a5068; }
+
+  button.save{
+    background:var(--gold);
+    color:var(--ink);
+    border:none;
+    font-family:var(--font-mono);
+    font-size:12px;
+    letter-spacing:1px;
+    text-transform:uppercase;
+    padding:11px 22px;
+    border-radius:2px;
+    cursor:pointer;
+    transition:transform .1s ease, opacity .15s ease;
+  }
+  button.save:hover{ opacity:.9; }
+  button.save:active{ transform:scale(.97); }
+  button.save:disabled{ opacity:.35; cursor:not-allowed; }
+
+  /* ---- timeline: the thread motif ---- */
+  .timeline{
+    position:relative;
+    padding-left:28px;
+  }
+  .timeline::before{
+    content:'';
+    position:absolute;
+    left:5px; top:6px; bottom:6px;
+    width:1px;
+    background:linear-gradient(to bottom, var(--gold), #2b3142 85%);
+  }
+
+  .day-group{ margin-bottom:36px; }
+  .day-label{
+    font-family:var(--font-mono);
+    font-size:11px;
+    letter-spacing:1.5px;
+    text-transform:uppercase;
+    color:var(--text-soft);
+    margin-bottom:14px;
+    position:relative;
+  }
+  .day-label::before{
+    content:'';
+    position:absolute;
+    left:-28px; top:4px;
+    width:9px; height:9px;
+    border-radius:50%;
+    background:var(--ink);
+    border:2px solid var(--gold);
+  }
+
+  .entry{
+    background:var(--paper);
+    color:var(--ink);
+    border-radius:3px;
+    padding:18px 20px;
+    margin-bottom:14px;
+    position:relative;
+    box-shadow:0 1px 0 rgba(0,0,0,.2);
+  }
+  .entry-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:14px;
+    margin-bottom:6px;
+  }
+  .entry-title{
+    font-family:var(--font-display);
+    font-size:19px;
+    margin:0;
+  }
+  .entry-time{
+    font-family:var(--font-mono);
+    font-size:10px;
+    letter-spacing:.5px;
+    color:#8a8570;
+    white-space:nowrap;
+    padding-top:4px;
+  }
+  .entry-body{
+    font-size:14.5px;
+    line-height:1.65;
+    color:#2c2c26;
+    white-space:pre-wrap;
+    margin-bottom:10px;
+  }
+  .entry-foot{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:10px;
+  }
+  .entry-progress .dot{ width:9px; height:9px; border-color:#c9bfa0; }
+  .entry-progress .dot.filled{ background:var(--rust); border-color:var(--rust); }
+  .entry-progress{ display:flex; gap:4px; }
+
+  .entry-tags{
+    display:flex;
+    gap:6px;
+    flex-wrap:wrap;
+  }
+  .tag{
+    font-family:var(--font-mono);
+    font-size:10px;
+    letter-spacing:.5px;
+    color:var(--teal);
+    background:rgba(62,124,111,0.12);
+    padding:3px 8px;
+    border-radius:10px;
+  }
+
+  .entry-actions{
+    display:flex;
+    gap:10px;
+  }
+  .entry-actions button{
+    background:none;
+    border:none;
+    cursor:pointer;
+    font-family:var(--font-mono);
+    font-size:10px;
+    letter-spacing:.5px;
+    text-transform:uppercase;
+    color:#9a9580;
+    padding:0;
+  }
+  .entry-actions button:hover{ color:var(--rust); }
+
+  .empty{
+    padding:60px 20px;
+    text-align:center;
+    color:var(--text-soft);
+  }
+  .empty .glyph{ font-size:32px; margin-bottom:12px; opacity:.6; }
+  .empty p{ font-family:var(--font-mono); font-size:12px; letter-spacing:1px; text-transform:uppercase; }
+
+  .toast{
+    position:fixed;
+    bottom:24px; left:50%;
+    transform:translateX(-50%) translateY(20px);
+    background:var(--gold);
+    color:var(--ink);
+    font-family:var(--font-mono);
+    font-size:12px;
+    letter-spacing:.5px;
+    padding:10px 18px;
+    border-radius:3px;
+    opacity:0;
+    pointer-events:none;
+    transition:all .25s ease;
+  }
+  .toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
+
+  @media (max-width:560px){
+    .head h1{ font-size:32px; }
+    .stats{ gap:18px; }
+  }
+</style>
+
+<div class="app">
+  <div class="head">
+    <div>
+      <h1>Karuna V</h1>
+      <div class="sub">a feed, kept day over day</div>
+    </div>
+    <div class="stats">
+      <div class="stat"><div class="n" id="statTotal">–</div><div class="l">Entries</div></div>
+      <div class="stat"><div class="n" id="statStreak">–</div><div class="l">Day Streak</div></div>
+      <div class="stat"><div class="n" id="statAvg">–</div><div class="l">Avg Progress</div></div>
+    </div>
+  </div>
+  <hr class="rule"/>
+
+  <div class="composer">
+    <input type="text" id="titleInput" placeholder="What are you marking down today?" maxlength="120"/>
+    <textarea id="bodyInput" placeholder="Write it out — what moved, what stalled, what you noticed..."></textarea>
+    <div class="composer-foot">
+      <div class="progress-picker">
+        <span>Progress</span>
+        <div class="dot-row" id="dotPicker"></div>
+      </div>
+      <input type="text" id="tagInput" class="tag-input" placeholder="tags, comma separated"/>
+      <button class="save" id="saveBtn" disabled>Save entry</button>
+    </div>
+  </div>
+
+  <div id="timelineWrap"></div>
+  <div class="toast" id="toast"></div>
+</div>
+
+<script>
+  const STORAGE_KEY = 'entries';
+  let entries = [];
+  let progressValue = 3;
+
+  const dotPicker = document.getElementById('dotPicker');
+  const titleInput = document.getElementById('titleInput');
+  const bodyInput = document.getElementById('bodyInput');
+  const tagInput = document.getElementById('tagInput');
+  const saveBtn = document.getElementById('saveBtn');
+  const timelineWrap = document.getElementById('timelineWrap');
+  const toast = document.getElementById('toast');
+
+  // build progress dot picker (1-5)
+  for(let i=1;i<=5;i++){
+    const d = document.createElement('button');
+    d.className = 'dot' + (i<=progressValue ? ' filled':'');
+    d.dataset.val = i;
+    d.addEventListener('click', ()=>{
+      progressValue = i;
+      renderDotPicker();
+    });
+    dotPicker.appendChild(d);
+  }
+  function renderDotPicker(){
+    [...dotPicker.children].forEach((d,idx)=>{
+      d.classList.toggle('filled', (idx+1)<=progressValue);
+    });
+  }
+
+  function showToast(msg){
+    toast.textContent = msg;
+    toast.classList.add('show');
+    setTimeout(()=>toast.classList.remove('show'), 1800);
+  }
+
+  function checkComposerReady(){
+    saveBtn.disabled = !(titleInput.value.trim() && bodyInput.value.trim());
+  }
+  titleInput.addEventListener('input', checkComposerReady);
+  bodyInput.addEventListener('input', checkComposerReady);
+
+  async function loadEntries(){
+    try{
+      const res = await window.storage.get(STORAGE_KEY);
+      entries = res && res.value ? JSON.parse(res.value) : [];
+    }catch(e){
+      entries = [];
+    }
+    render();
+  }
+
+  async function persist(){
+    try{
+      await window.storage.set(STORAGE_KEY, JSON.stringify(entries));
+    }catch(e){
+      showToast('Could not save — try again');
+    }
+  }
+
+  async function addEntry(){
+    const title = titleInput.value.trim();
+    const body = bodyInput.value.trim();
+    if(!title || !body) return;
+    const tags = tagInput.value.split(',').map(t=>t.trim()).filter(Boolean);
+
+    const entry = {
+      id: 'e_' + Date.now() + '_' + Math.random().toString(36).slice(2,7),
+      title, body, tags,
+      progress: progressValue,
+      createdAt: new Date().toISOString()
+    };
+    entries.unshift(entry);
+    await persist();
+
+    titleInput.value=''; bodyInput.value=''; tagInput.value='';
+    progressValue = 3; renderDotPicker();
+    checkComposerReady();
+    render();
+    showToast('Entry saved');
+  }
+  saveBtn.addEventListener('click', addEntry);
+
+  async function deleteEntry(id){
+    entries = entries.filter(e=>e.id!==id);
+    await persist();
+    render();
+    showToast('Entry removed');
+  }
+
+  function fmtDay(dateStr){
+    const d = new Date(dateStr);
+    const today = new Date();
+    const yest = new Date(); yest.setDate(today.getDate()-1);
+    const sameDay = (a,b)=> a.toDateString()===b.toDateString();
+    if(sameDay(d, today)) return 'Today';
+    if(sameDay(d, yest)) return 'Yesterday';
+    return d.toLocaleDateString(undefined,{ weekday:'long', month:'long', day:'numeric', year: d.getFullYear()!==today.getFullYear() ? 'numeric' : undefined });
+  }
+  function fmtTime(dateStr){
+    return new Date(dateStr).toLocaleTimeString(undefined,{hour:'numeric', minute:'2-digit'});
+  }
+
+  function computeStats(){
+    const total = entries.length;
+    document.getElementById('statTotal').textContent = total;
+
+    if(total===0){
+      document.getElementById('statStreak').textContent = '0';
+      document.getElementById('statAvg').textContent = '–';
+      return;
+    }
+    const avg = (entries.reduce((s,e)=>s+(e.progress||0),0)/total).toFixed(1);
+    document.getElementById('statAvg').textContent = avg;
+
+    // streak calc: consecutive days with at least one entry, ending today or yesterday
+    const days = [...new Set(entries.map(e=> new Date(e.createdAt).toDateString()))];
+    const daySet = new Set(days);
+    let streak = 0;
+    let cursor = new Date();
+    // if no entry today, allow starting from yesterday
+    if(!daySet.has(cursor.toDateString())){
+      cursor.setDate(cursor.getDate()-1);
+    }
+    while(daySet.has(cursor.toDateString())){
+      streak++;
+      cursor.setDate(cursor.getDate()-1);
+    }
+    document.getElementById('statStreak').textContent = streak;
+  }
+
+  function render(){
+    computeStats();
+
+    if(entries.length===0){
+      timelineWrap.innerHTML = `<div class="empty"><div class="glyph">✎</div><p>Nothing recorded yet — write your first line above</p></div>`;
+      return;
+    }
+
+    // group by day
+    const groups = [];
+    let lastDay = null;
+    entries.forEach(e=>{
+      const dayKey = new Date(e.createdAt).toDateString();
+      if(dayKey !== lastDay){
+        groups.push({ dayKey, label: fmtDay(e.createdAt), items: [] });
+        lastDay = dayKey;
+      }
+      groups[groups.length-1].items.push(e);
+    });
+
+    let html = '<div class="timeline">';
+    groups.forEach(g=>{
+      html += `<div class="day-group"><div class="day-label">${g.label}</div>`;
+      g.items.forEach(e=>{
+        const dots = Array.from({length:5},(_,i)=> `<span class="dot${i<e.progress?' filled':''}"></span>`).join('');
+        const tags = (e.tags||[]).map(t=>`<span class="tag">${escapeHtml(t)}</span>`).join('');
+        html += `
+          <div class="entry" data-id="${e.id}">
+            <div class="entry-top">
+              <h3 class="entry-title">${escapeHtml(e.title)}</h3>
+              <div class="entry-time">${fmtTime(e.createdAt)}</div>
+            </div>
+            <div class="entry-body">${escapeHtml(e.body)}</div>
+            <div class="entry-foot">
+              <div class="entry-progress">${dots}</div>
+              <div class="entry-tags">${tags}</div>
+              <div class="entry-actions">
+                <button class="del-btn" data-id="${e.id}">Delete</button>
+              </div>
+            </div>
+          </div>`;
+      });
+      html += `</div>`;
+    });
+    html += '</div>';
+    timelineWrap.innerHTML = html;
+
+    timelineWrap.querySelectorAll('.del-btn').forEach(btn=>{
+      btn.addEventListener('click', ()=> deleteEntry(btn.dataset.id));
+    });
+  }
+
+  function escapeHtml(str){
+    const d = document.createElement('div');
+    d.textContent = str;
+    return d.innerHTML;
+  }
+
+  loadEntries();
+</script>
