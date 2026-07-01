@@ -4,6 +4,7 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Karuna V</title>
+
 <style>
   :root{
     --ink:#14171f;
@@ -29,7 +30,6 @@
     position:relative;
   }
 
-  /* ---- header / signature: the thread ---- */
   .head{
     display:flex;
     justify-content:space-between;
@@ -69,7 +69,6 @@
     margin:28px 0 32px;
   }
 
-  /* ---- entry composer ---- */
   .composer{
     background:var(--ink-soft);
     border:1px solid #2b3142;
@@ -164,7 +163,6 @@
   button.save:active{ transform:scale(.97); }
   button.save:disabled{ opacity:.35; cursor:not-allowed; }
 
-  /* ---- timeline: the thread motif ---- */
   .timeline{
     position:relative;
     padding-left:28px;
@@ -305,7 +303,6 @@
     .head h1{ font-size:32px; }
     .stats{ gap:18px; }
   }
-
 </style>
 </head>
 <body>
@@ -353,7 +350,6 @@
   const timelineWrap = document.getElementById('timelineWrap');
   const toast = document.getElementById('toast');
 
-  // build progress dot picker (1-5)
   for(let i=1;i<=5;i++){
     const d = document.createElement('button');
     d.className = 'dot' + (i<=progressValue ? ' filled':'');
@@ -464,12 +460,10 @@
     const avg = (entries.reduce((s,e)=>s+(e.progress||0),0)/total).toFixed(1);
     document.getElementById('statAvg').textContent = avg;
 
-    // streak calc: consecutive days with at least one entry, ending today or yesterday
     const days = [...new Set(entries.map(e=> new Date(e.createdAt).toDateString()))];
     const daySet = new Set(days);
     let streak = 0;
     let cursor = new Date();
-    // if no entry today, allow starting from yesterday
     if(!daySet.has(cursor.toDateString())){
       cursor.setDate(cursor.getDate()-1);
     }
@@ -488,7 +482,6 @@
       return;
     }
 
-    // group by day
     const groups = [];
     let lastDay = null;
     entries.forEach(e=>{
